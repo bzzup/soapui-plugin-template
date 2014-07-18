@@ -1,7 +1,9 @@
 package com.smartbear.soapui.plugin.template.factories;
 
-import com.eviware.soapui.SoapUI;
+import net.sf.json.JSONSerializer;
+
 import com.eviware.soapui.config.TestAssertionConfig;
+import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionCategoriesTableModel;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionCategoryMapping;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionListEntry;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlMessageAssertion;
@@ -9,15 +11,16 @@ import com.eviware.soapui.impl.wsdl.teststeps.assertions.AbstractTestAssertionFa
 import com.eviware.soapui.model.TestPropertyHolder;
 import com.eviware.soapui.model.iface.MessageExchange;
 import com.eviware.soapui.model.iface.SubmitContext;
-import com.eviware.soapui.model.testsuite.*;
+import com.eviware.soapui.model.testsuite.Assertable;
 import com.eviware.soapui.model.testsuite.AssertionError;
+import com.eviware.soapui.model.testsuite.AssertionException;
+import com.eviware.soapui.model.testsuite.ResponseAssertion;
 import com.eviware.soapui.support.StringUtils;
-import net.sf.json.JSONSerializer;
 
 public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
 
     private static final String ASSERTION_ID = "SampleTestAssertionID";
-    private static final String ASSERTION_LABEL = "Sample JSON Content Assertion";
+    private static final String ASSERTION_LABEL = "JSON contains one element";
 
     public SampleTestAssertionFactory()
     {
@@ -32,7 +35,7 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
     @Override
     public AssertionListEntry getAssertionListEntry() {
         return new AssertionListEntry(ASSERTION_ID, ASSERTION_LABEL,
-                "Asserts that the response message is a valid JSON string" );
+                "Asserts that JSON contains only 1 element" );
     }
 
     @Override
@@ -66,8 +69,19 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
             {
                 throw new AssertionException( new AssertionError( "JSON Parsing failed; [" + e.toString() + "]" ));
             }
-
-            return "Response is valid JSON";
+            
+            String content = messageExchange.getResponse().getContentAsString();
+            content = content.trim();
+            
+            if (!content.startsWith("[") && !content.endsWith("]")) {
+    	    	content = "["+content+"]";
+    	    }
+            
+            if (JSONSerializer.toJSON(content).size() != 1) {
+            	throw new AssertionException( new AssertionError("JSON contains more than 1 element: " + JSONSerializer.toJSON(content).size() + "-> " + content));
+            }
+            
+            return "JSON contains 1 element";
         }
 
         @Override
