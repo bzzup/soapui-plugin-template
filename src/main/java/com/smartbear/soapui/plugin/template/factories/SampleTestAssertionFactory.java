@@ -1,5 +1,7 @@
 package com.smartbear.soapui.plugin.template.factories;
 
+import org.apache.xmlbeans.XmlObject;
+
 import net.sf.json.JSONSerializer;
 
 import com.eviware.soapui.config.TestAssertionConfig;
@@ -16,11 +18,15 @@ import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.model.testsuite.AssertionException;
 import com.eviware.soapui.model.testsuite.ResponseAssertion;
 import com.eviware.soapui.support.StringUtils;
+import com.eviware.soapui.support.xml.XmlObjectConfigurationBuilder;
+import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
+import com.eviware.soapui.support.UISupport;
 
 public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
 
     private static final String ASSERTION_ID = "SampleTestAssertionID";
-    private static final String ASSERTION_LABEL = "JSON contains one element";
+    private static final String ASSERTION_LABEL = "JSON contains required amount of elements";
+    private static String Elements;
 
     public SampleTestAssertionFactory()
     {
@@ -35,7 +41,7 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
     @Override
     public AssertionListEntry getAssertionListEntry() {
         return new AssertionListEntry(ASSERTION_ID, ASSERTION_LABEL,
-                "Asserts that JSON contains only 1 element" );
+                "Asserts that JSON contains required amount of elements" );
     }
 
     @Override
@@ -51,12 +57,14 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
 
         public SampleTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
-            super( assertionConfig, modelItem, true, false, false, true );
+            super( assertionConfig, modelItem, false, true, false, false );
+            XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(getConfiguration());
+            Elements = reader.readString("Elements", "1");
         }
 
         @Override
         protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext submitContext) throws AssertionException {
-
+        	int elementsValue;
             try
             {
                 String content = messageExchange.getResponse().getContentAsString();
@@ -70,6 +78,13 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
                 throw new AssertionException( new AssertionError( "JSON Parsing failed; [" + e.toString() + "]" ));
             }
             
+            try {
+            	elementsValue = Integer.valueOf(Elements);
+            }
+            catch (Exception e){
+            	throw new AssertionException( new AssertionError( "Can't parse elements to int" ));
+            }
+            
             String content = messageExchange.getResponse().getContentAsString();
             content = content.trim();
             
@@ -77,11 +92,46 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
     	    	content = "["+content+"]";
     	    }
             
-            if (JSONSerializer.toJSON(content).size() != 1) {
-            	throw new AssertionException( new AssertionError("JSON contains more than 1 element: " + JSONSerializer.toJSON(content).size() + "-> " + content));
+            if (JSONSerializer.toJSON(content).size() != elementsValue) {
+            	throw new AssertionException( new AssertionError("JSON contains more than "+elementsValue+" element: " + JSONSerializer.toJSON(content).size() + "-> " + content));
             }
             
-            return "JSON contains 1 element";
+            return "JSON contains "+elementsValue+" element";
+        }
+        
+        public boolean configure() {
+            String value = Elements;
+
+            if (value == null || value.trim().length() == 0) {
+                value = "1";
+            }
+
+            value = UISupport.prompt("Specify required amount of elements", "Configure JSON Assertion", value);
+            	
+            try {
+                Long.parseLong(value);
+                Elements = value;
+
+            } catch (Exception e) {
+                return false;
+            }
+
+            setConfiguration(createConfiguration());
+            return true;
+        }
+        
+        protected XmlObject createConfiguration() {
+            XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
+            return builder.add("Elements", Elements).finish();
+        }
+        
+        public String getElements() {
+            return Elements;
+        }
+
+        public void setElements(String elements) {
+        	Elements = elements;
+            setConfiguration(createConfiguration());
         }
 
         @Override
