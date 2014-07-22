@@ -1,11 +1,10 @@
 package com.smartbear.soapui.plugin.template.factories;
 
-import org.apache.xmlbeans.XmlObject;
-
 import net.sf.json.JSONSerializer;
 
+import org.apache.xmlbeans.XmlObject;
+
 import com.eviware.soapui.config.TestAssertionConfig;
-import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionCategoriesTableModel;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionCategoryMapping;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionListEntry;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlMessageAssertion;
@@ -18,15 +17,15 @@ import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.model.testsuite.AssertionException;
 import com.eviware.soapui.model.testsuite.ResponseAssertion;
 import com.eviware.soapui.support.StringUtils;
+import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationBuilder;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
-import com.eviware.soapui.support.UISupport;
 
 public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
 
     private static final String ASSERTION_ID = "SampleTestAssertionID";
     private static final String ASSERTION_LABEL = "JSON contains required amount of elements";
-    private static String Elements;
+    private String Elements;
 
     public SampleTestAssertionFactory()
     {
@@ -49,7 +48,7 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
         return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
     }
 
-    public static class SampleTestAssertion  extends WsdlMessageAssertion implements ResponseAssertion
+    public class SampleTestAssertion extends WsdlMessageAssertion implements ResponseAssertion
     {
         /**
          * Assertions need to have a constructor that takes a TestAssertionConfig and the ModelItem to be asserted

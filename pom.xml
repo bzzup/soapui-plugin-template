@@ -6,7 +6,7 @@
 
     <groupId>soapui-json-assert-plugin</groupId>
     <artifactId>soapui-json-assert-plugin</artifactId>
-    <version>0.1-plugin</version>
+    <version>0.2-plugin</version>
 
     <name>Soap UI JSON Assertion Plugin</name>
 
