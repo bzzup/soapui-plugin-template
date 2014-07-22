@@ -25,7 +25,7 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
 
     private static final String ASSERTION_ID = "SampleTestAssertionID";
     private static final String ASSERTION_LABEL = "JSON contains required amount of elements";
-    private String Elements;
+    
 
     public SampleTestAssertionFactory()
     {
@@ -48,12 +48,14 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
         return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
     }
 
-    public class SampleTestAssertion extends WsdlMessageAssertion implements ResponseAssertion
+    public static class SampleTestAssertion extends WsdlMessageAssertion implements ResponseAssertion
     {
         /**
          * Assertions need to have a constructor that takes a TestAssertionConfig and the ModelItem to be asserted
          */
 
+    	private String Elements;
+    	
         public SampleTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
             super( assertionConfig, modelItem, false, true, false, false );
