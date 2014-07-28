@@ -1,5 +1,9 @@
 package com.smartbear.soapui.plugin.template.factories;
 
+import java.util.HashMap;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 
 import org.apache.xmlbeans.XmlObject;
@@ -21,26 +25,26 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationBuilder;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
 
-public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
+public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
-    private static final String ASSERTION_ID = "SampleTestAssertionID";
-    private static final String ASSERTION_LABEL = "JSON contains required amount of elements";
+    private static final String ASSERTION_ID = "JSONTestAssertionID";
+    private static final String ASSERTION_LABEL = "JSON contains required element";
     
 
-    public SampleTestAssertionFactory()
+    public ParseJSONFactory()
     {
-        super( ASSERTION_ID, ASSERTION_LABEL, SampleTestAssertion.class);
+        super( ASSERTION_ID, ASSERTION_LABEL, JSONTestAssertion.class);
     }
 
     @Override
     public Class<? extends WsdlMessageAssertion> getAssertionClassType() {
-        return SampleTestAssertion.class;
+        return JSONTestAssertion.class;
     }
 
     @Override
     public AssertionListEntry getAssertionListEntry() {
         return new AssertionListEntry(ASSERTION_ID, ASSERTION_LABEL,
-                "Asserts that JSON contains required amount of elements" );
+                "Asserts that JSON contains required element" );
     }
 
     @Override
@@ -48,30 +52,32 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
         return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
     }
 
-    public static class SampleTestAssertion extends WsdlMessageAssertion implements ResponseAssertion
+    public static class JSONTestAssertion extends WsdlMessageAssertion implements ResponseAssertion
     {
         /**
          * Assertions need to have a constructor that takes a TestAssertionConfig and the ModelItem to be asserted
          */
 
-    	private String Elements;
+    	private String key;
+    	private String value;
+    	private HashMap<String, String> keyValueMap = new HashMap<String, String>();
     	
-        public SampleTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
+        public JSONTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
             super( assertionConfig, modelItem, false, true, false, false );
             XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(getConfiguration());
-            Elements = reader.readString("Elements", "1");
+            key = reader.readString("Key", "");
+            value = reader.readString("Value", "");
         }
 
         @Override
         protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext submitContext) throws AssertionException {
-        	int elementsValue;
-            try
+            //Validate JSON has correct format
+        	try
             {
                 String content = messageExchange.getResponse().getContentAsString();
                 if(StringUtils.isNullOrEmpty(content))
                     return "Response is empty - not a valid JSON response";
-
                 JSONSerializer.toJSON(messageExchange.getResponse().getContentAsString());
             }
             catch( Exception e )
@@ -80,7 +86,7 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
             }
             
             try {
-            	elementsValue = Integer.valueOf(Elements);
+            	int elementsValue = Integer.valueOf(key);
             }
             catch (Exception e){
             	throw new AssertionException( new AssertionError( "Can't parse elements to int" ));
@@ -89,52 +95,72 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
             String content = messageExchange.getResponse().getContentAsString();
             content = content.trim();
             
+            //Convert to array
             if (!content.startsWith("[") && !content.endsWith("]")) {
     	    	content = "["+content+"]";
     	    }
-
-            if (JSONSerializer.toJSON(content).size() != elementsValue) {
-            	throw new AssertionException( new AssertionError("JSON contains more than "+elementsValue+" element: " + JSONSerializer.toJSON(content).size() + "-> " + content));
+            
+            JSONObject json;
+			try {
+				json = (JSONObject) JSONArray.fromObject(content).get(0);
+			} catch (Exception e) {
+				throw new AssertionException( new AssertionError("Can't parse content to JSONObject"));
+			}
+            
+            findKeys(json);
+            
+            if (keyValueMap.containsKey(key)) {
+            	if (keyValueMap.get(key) != value) {
+            		throw new AssertionException( new AssertionError("Expected " + value + " != " + keyValueMap.get(key)));
+            	}
+            	else {
+            		throw new AssertionException( new AssertionError(key + " key doesn't exist"));
+            	}
             }
             
-            return "JSON contains "+elementsValue+" element";
+            return "OK";
         }
         
+		private void findKeys(JSONObject object) {
+			for (Object key : object.keySet()) {
+				if (object.get(key).getClass() == JSONObject.class) {
+					findKeys((JSONObject) object.get(key));
+				} else {
+					keyValueMap.put((String) key, (String) object.get(key));
+				}
+			}
+		}
+        
         public boolean configure() {
-            String value = Elements;
+            String valueKey = key;
+            String valueValue = value;
+            
 
-            if (value == null || value.trim().length() == 0) {
-                value = "1";
+            if (valueKey == null || valueKey.trim().length() == 0) {
+                valueKey = "id";
             }
-
-            value = UISupport.prompt("Specify required amount of elements", "Configure JSON Assertion", value);
+            
+            if (valueValue == null || valueValue.trim().length() == 0) {
+            	valueValue = "1";
+            }
+            
+            valueKey = UISupport.prompt("KEY", "Configure JSON Assertion", valueKey);
+            valueValue = UISupport.prompt("VALUE", "Configure JSON Assertion", valueValue);
+            
+            key = valueKey;
+            value = valueValue;
             	
-            try {
-                Long.parseLong(value);
-                Elements = value;
-
-            } catch (Exception e) {
-                return false;
-            }
-
             setConfiguration(createConfiguration());
             return true;
         }
         
         protected XmlObject createConfiguration() {
             XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
-            return builder.add("Elements", Elements).finish();
+            builder.add("key", key);
+            builder.add("value", value);
+            return builder.finish();
         }
         
-        public String getElements() {
-            return Elements;
-        }
-
-        public void setElements(String elements) {
-        	Elements = elements;
-            setConfiguration(createConfiguration());
-        }
-
         @Override
         protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext submitContext) throws AssertionException {
             return null;
