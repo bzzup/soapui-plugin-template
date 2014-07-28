@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>soapui-json-assert-plugin</groupId>
-    <artifactId>soapui-json-assert-plugin</artifactId>
-    <version>0.2-plugin</version>
+    <groupId>soapui-json-value-assert-plugin</groupId>
+    <artifactId>soapui-json-value-assert-plugin</artifactId>
+    <version>0.1-plugin</version>
 
-    <name>Soap UI JSON Assertion Plugin</name>
+    <name>Soap UI JSON Value Assertion Plugin</name>
 
     <repositories>
         <repository>
