@@ -28,7 +28,7 @@ import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
 public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
     private static final String ASSERTION_ID = "JSONTestAssertionID";
-    private static final String ASSERTION_LABEL = "JSON contains required element";
+    private static final String ASSERTION_LABEL = "JSON contains required key - value";
     
 
     public ParseJSONFactory()
