@@ -11,6 +11,7 @@ import org.apache.xmlbeans.XmlObject;
 import com.eviware.soapui.config.TestAssertionConfig;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionCategoryMapping;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionListEntry;
+import com.eviware.soapui.impl.wsdl.support.HelpUrls;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlMessageAssertion;
 import com.eviware.soapui.impl.wsdl.teststeps.assertions.AbstractTestAssertionFactory;
 import com.eviware.soapui.model.TestPropertyHolder;
@@ -22,13 +23,22 @@ import com.eviware.soapui.model.testsuite.AssertionException;
 import com.eviware.soapui.model.testsuite.ResponseAssertion;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.eviware.soapui.support.types.StringToStringMap;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationBuilder;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
+import com.eviware.x.form.XForm;
+import com.eviware.x.form.XFormDialog;
+import com.eviware.x.form.XFormDialogBuilder;
+import com.eviware.x.form.XFormFactory;
 
 public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
+	
+	
     private static final String ASSERTION_ID = "JSONTestAssertionID";
     private static final String ASSERTION_LABEL = "JSON contains required key - value";
+    private static final String KEY_LABEL = "Key";
+    private static final String VALUE_LABEL = "Value";
     
 
     public ParseJSONFactory()
@@ -58,6 +68,8 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
          * Assertions need to have a constructor that takes a TestAssertionConfig and the ModelItem to be asserted
          */
 
+    	private XFormDialog dialog;
+    	
     	private String key;
     	private String value;
     	private String result;
@@ -150,8 +162,12 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 		}
         
         public boolean configure() {
-            String valueKey = key;
-            String valueValue = value;
+        	if (dialog == null) {
+                buildDialog();
+            }
+        	
+            String valueKey = key.trim();
+            String valueValue = value.trim();
             
 
             if (valueKey == null || valueKey.trim().length() == 0) {
@@ -162,40 +178,44 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             	valueValue = "1";
             }
             
-            valueKey = UISupport.prompt("KEY", "Configure JSON Assertion", valueKey);
-            valueValue = UISupport.prompt("VALUE", "Configure JSON Assertion", valueValue);
+            StringToStringMap values = new StringToStringMap();
+            values.put(KEY_LABEL, valueKey);
+            values.put(VALUE_LABEL, valueValue);
             
-            key = valueKey;
-            value = valueValue;
+            values = dialog.show(values);
+            
+            if (dialog.getReturnValue() == XFormDialog.OK_OPTION) {
+                key = values.get(KEY_LABEL);
+                value = values.get(VALUE_LABEL);
+            }
+            
+//            valueKey = UISupport.prompt("KEY", "Configure JSON Assertion", valueKey);
+//            valueValue = UISupport.prompt("VALUE", "Configure JSON Assertion", valueValue);
+            
+//            key = valueKey;
+//            value = valueValue;
             
             
             	
             setConfiguration(createConfiguration());
             return true;
         }
-        
-        public String getKey() {
-            return key;
-        }
 
-        public void setKey(String elements) {
-        	key = elements;
-            setConfiguration(createConfiguration());
-        }
-        
-        public String getValue() {
-            return value;
-        }
+        private void buildDialog() {
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Contains Assertion");
+            XForm mainForm = builder.createForm("Basic");
 
-        public void setValue(String elements) {
-        	value = elements;
-            setConfiguration(createConfiguration());
+            mainForm.addTextField(KEY_LABEL, "Key to check for", XForm.FieldType.TEXT).setWidth(40);
+            mainForm.addTextField(VALUE_LABEL, "Value to check for", XForm.FieldType.TEXTAREA).setWidth(40);
+
+            dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SIMPLE_CONTAINS_HELP_URL),
+                    "Specify options. Format: Key.Key.Key = Value", UISupport.TOOL_ICON);
         }
         
         protected XmlObject createConfiguration() {
             XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
-            builder.add("key", key);
-            builder.add("value", value);
+            builder.add("key", key.trim());
+            builder.add("value", value.trim());
             return builder.finish();
         }
         
