@@ -44,7 +44,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     @Override
     public AssertionListEntry getAssertionListEntry() {
         return new AssertionListEntry(ASSERTION_ID, ASSERTION_LABEL,
-                "Asserts that JSON contains required element" );
+                "Asserts that JSON contains required element. 'KEY.KEY.KEY = VALUE' format " );
     }
 
     @Override
@@ -60,14 +60,15 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
     	private String key;
     	private String value;
+    	private String result;
     	private HashMap<String, String> keyValueMap = new HashMap<String, String>();
     	
         public JSONTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
-            super( assertionConfig, modelItem, false, true, false, false );
+            super( assertionConfig, modelItem, true, true, true, false );
             XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(getConfiguration());
-            key = reader.readString("Key", "");
-            value = reader.readString("Value", "");
+            key = reader.readString("key", "");
+            value = reader.readString("value", "");
         }
 
         @Override
@@ -83,13 +84,6 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             catch( Exception e )
             {
                 throw new AssertionException( new AssertionError( "JSON Parsing failed; [" + e.toString() + "]" ));
-            }
-            
-            try {
-            	int elementsValue = Integer.valueOf(key);
-            }
-            catch (Exception e){
-            	throw new AssertionException( new AssertionError( "Can't parse elements to int" ));
             }
             
             String content = messageExchange.getResponse().getContentAsString();
@@ -109,24 +103,48 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             
             findKeys(json);
             
-            if (keyValueMap.containsKey(key)) {
-            	if (keyValueMap.get(key) != value) {
-            		throw new AssertionException( new AssertionError("Expected " + value + " != " + keyValueMap.get(key)));
-            	}
-            	else {
-            		throw new AssertionException( new AssertionError(key + " key doesn't exist"));
-            	}
-            }
+            String[] hierKeys = key.split("\\.");
             
+			try {
+				for (String elementKey : hierKeys) {
+					if (json.get(elementKey).getClass() == JSONArray.class) {
+						if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
+							json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
+						} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
+							result = getStringValues((JSONArray) json.get(elementKey));
+						}
+
+					} else {
+						result = json.getString(elementKey);
+					}
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				throw new AssertionException(new AssertionError(key + " : " + value + " not found"));
+			}
+
+			if (!result.equals(value)) {
+				throw new AssertionException(new AssertionError("Expected "
+						+ value + " != " + result));
+			}
+
             return "OK";
         }
+        
+    	private String getStringValues(JSONArray array) {
+    		String result = "";
+    		for (int i = 0; i < array.size(); i++) {
+    			result += "\""+array.getString(i)+"\",";
+    		}
+    		return result.substring(0, result.length()-1);
+    	}
         
 		private void findKeys(JSONObject object) {
 			for (Object key : object.keySet()) {
 				if (object.get(key).getClass() == JSONObject.class) {
 					findKeys((JSONObject) object.get(key));
 				} else {
-					keyValueMap.put((String) key, (String) object.get(key));
+					keyValueMap.put(String.valueOf(key), String.valueOf(object.get(key)));
 				}
 			}
 		}
@@ -149,9 +167,29 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             
             key = valueKey;
             value = valueValue;
+            
+            
             	
             setConfiguration(createConfiguration());
             return true;
+        }
+        
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String elements) {
+        	key = elements;
+            setConfiguration(createConfiguration());
+        }
+        
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String elements) {
+        	value = elements;
+            setConfiguration(createConfiguration());
         }
         
         protected XmlObject createConfiguration() {

@@ -3,5 +3,9 @@
    <tns:factory id="SampleTestAssertionFactory"
            factoryClass="com.smartbear.soapui.plugin.template.factories.SampleTestAssertionFactory"
            factoryType="com.eviware.soapui.impl.wsdl.teststeps.assertions.TestAssertionFactory"/>
+    
+	<tns:factory id="ParseJSONFactory"
+           factoryClass="com.smartbear.soapui.plugin.template.factories.ParseJSONFactory"
+           factoryType="com.eviware.soapui.impl.wsdl.teststeps.assertions.TestAssertionFactory"/>
 
 </tns:soapui-factories>

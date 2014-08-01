@@ -4,9 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>soapui-json-qty-plugin</groupId>
-    <artifactId>soapui-json-qty-plugin</artifactId>
-    <version>0.2-plugin</version>
+    <artifactId>soap-ahr-json-plugin</artifactId>
+    <version>0.1-plugin</version>
 
     <name>Soap UI JSON Assertion Plugin</name>
 
@@ -186,4 +185,5 @@
     </build>
 
 
+    <groupId>soap-ahr-json-plugin</groupId>
 </project>
