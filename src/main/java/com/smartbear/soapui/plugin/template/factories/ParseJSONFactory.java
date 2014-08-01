@@ -189,14 +189,8 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
                 value = values.get(VALUE_LABEL);
             }
             
-//            valueKey = UISupport.prompt("KEY", "Configure JSON Assertion", valueKey);
-//            valueValue = UISupport.prompt("VALUE", "Configure JSON Assertion", valueValue);
+            this.setName("JSON contains [\"" + key + "\" : \"" + value +"\"]");
             
-//            key = valueKey;
-//            value = valueValue;
-            
-            
-            	
             setConfiguration(createConfiguration());
             return true;
         }
