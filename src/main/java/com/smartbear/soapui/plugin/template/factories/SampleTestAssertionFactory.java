@@ -116,7 +116,7 @@ public class SampleTestAssertionFactory extends AbstractTestAssertionFactory {
             } catch (Exception e) {
                 return false;
             }
-
+            this.setName("JSON contains "+ value + " element(s)");
             setConfiguration(createConfiguration());
             return true;
         }
