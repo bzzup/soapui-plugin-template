@@ -1,6 +1,8 @@
 package com.smartbear.soapui.plugin.template.factories;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -17,6 +19,9 @@ import com.eviware.soapui.impl.wsdl.teststeps.assertions.AbstractTestAssertionFa
 import com.eviware.soapui.model.TestPropertyHolder;
 import com.eviware.soapui.model.iface.MessageExchange;
 import com.eviware.soapui.model.iface.SubmitContext;
+import com.eviware.soapui.model.propertyexpansion.PropertyExpander;
+import com.eviware.soapui.model.propertyexpansion.PropertyExpansion;
+import com.eviware.soapui.model.propertyexpansion.PropertyExpansionUtils;
 import com.eviware.soapui.model.testsuite.Assertable;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.model.testsuite.AssertionException;
@@ -61,6 +66,12 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     public String getCategory() {
         return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
     }
+    
+    @Override
+    public boolean canAssert(TestPropertyHolder modelItem, String property) {
+        String content = modelItem.getPropertyValue(property);
+        return true;
+    }
 
     public static class JSONTestAssertion extends WsdlMessageAssertion implements ResponseAssertion
     {
@@ -77,7 +88,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     	
         public JSONTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
-            super( assertionConfig, modelItem, true, true, true, false );
+            super( assertionConfig, modelItem, true, true, true, true );
             XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(getConfiguration());
             key = reader.readString("key", "");
             value = reader.readString("value", "");
@@ -85,21 +96,28 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
         @Override
         protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext submitContext) throws AssertionException {
-            //Validate JSON has correct format
+        	return doAssert(submitContext, messageExchange.getResponse().getContentAsString(), "Response");
+        	
+        }
+        
+        private String doAssert(SubmitContext context, String content, String type) throws AssertionException {
+        	String propValue = PropertyExpander.expandProperties(context, value); 
+        	if (propValue == null) {
+        		propValue = "";
+        	} 
+        	
         	try
             {
-                String content = messageExchange.getResponse().getContentAsString();
                 if(StringUtils.isNullOrEmpty(content))
                     return "Response is empty - not a valid JSON response";
-                JSONSerializer.toJSON(messageExchange.getResponse().getContentAsString());
+                JSONSerializer.toJSON(content);
             }
             catch( Exception e )
             {
                 throw new AssertionException( new AssertionError( "JSON Parsing failed; [" + e.toString() + "]" ));
             }
-            
-            String content = messageExchange.getResponse().getContentAsString();
-            content = content.trim();
+
+        	content = content.trim();
             
             //Convert to array
             if (!content.startsWith("[") && !content.endsWith("]")) {
@@ -132,12 +150,12 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				throw new AssertionException(new AssertionError(key + " : " + value + " not found"));
+				throw new AssertionException(new AssertionError(key + " : " + propValue + " not found"));
 			}
 
-			if (!result.equals(value)) {
+			if (!result.equals(propValue)) {
 				throw new AssertionException(new AssertionError("Expected "
-						+ value + " != " + result));
+						+ propValue + " != " + result));
 			}
 
             return "OK";
@@ -166,21 +184,21 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
                 buildDialog();
             }
         	
-            String valueKey = key.trim();
-            String valueValue = value.trim();
+        	key = key.trim();
+        	value = value.trim();
             
 
-            if (valueKey == null || valueKey.trim().length() == 0) {
-                valueKey = "id";
+            if (key == null || key.trim().length() == 0) {
+            	key = "id";
             }
             
-            if (valueValue == null || valueValue.trim().length() == 0) {
-            	valueValue = "1";
-            }
+//            if (valueValue == null || valueValue.trim().length() == 0) {
+//            	valueValue = "1";
+//            }
             
             StringToStringMap values = new StringToStringMap();
-            values.put(KEY_LABEL, valueKey);
-            values.put(VALUE_LABEL, valueValue);
+            values.put(KEY_LABEL, key);
+            values.put(VALUE_LABEL, value);
             
             values = dialog.show(values);
             
@@ -215,12 +233,21 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
         
         @Override
         protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext submitContext) throws AssertionException {
-            return null;
+        	return doAssert(submitContext, messageExchange.getRequestContent(), "Request");
         }
 
         @Override
-        protected String internalAssertProperty(TestPropertyHolder testPropertyHolder, String s, MessageExchange messageExchange, SubmitContext submitContext) throws AssertionException {
-            return null;
+        protected String internalAssertProperty(TestPropertyHolder testPropertyHolder, String propertyName, MessageExchange messageExchange, SubmitContext submitContext) throws AssertionException {
+        	doAssert(submitContext, testPropertyHolder.getPropertyValue(propertyName), propertyName);
+            return "OK";
+        }
+        
+        public PropertyExpansion[] getPropertyExpansions() {
+            List<PropertyExpansion> result = new ArrayList<PropertyExpansion>();
+
+            result.addAll(PropertyExpansionUtils.extractPropertyExpansions(getAssertable().getModelItem(), this, "value"));
+
+            return result.toArray(new PropertyExpansion[result.size()]);
         }
     }
 }
