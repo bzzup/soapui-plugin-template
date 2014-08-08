@@ -11,16 +11,15 @@ import net.sf.json.JSONObject;
 public class Main {
 
 	private static HashMap<String, String> keyValueMap = new HashMap<String, String>();
-	private final static int CASE_ARRAY = 1;
-	private final static int CASE_OBJECT = 2;
-	private static int CASE = 2;
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {
-		String key = "longName.mama";
+		String key = "longName.size()";
 		String content = "[{\"id\":\"1142380\",\"code\":\"KHV0002\",\"startDate\":1343772000000,\"endDate\":null,\"elementId\":\"1140100\",\"points\":0,\"educationLevels\":[\"GRS\", \"TEST\"],\"longName\":[{\"locale\":\"no_NO\",\"value\":\"Kunst og håndverk 2. årstrinn\"}],\"shortName\":[{\"locale\":\"no_NO\",\"value\":\"Kunst og håndverk 2. årstrinn\",\"test\":[{\"name\":\"Andrei\",\"surname\":\"Hrabun\"}]}],\"courseGroup\":null}]";
 		//String content = args[0];
 		String result = null;
+		JSONArray jsonAr = null;
+		
 		content = content.trim();
 	    if (!content.startsWith("[") && !content.endsWith("]")) {
 	    	content = "["+content+"]";
@@ -32,19 +31,33 @@ public class Main {
 		String[] hierKeys = key.split("\\.");
 		try {
 			for (String elementKey : hierKeys) {
-
-				if (json.get(elementKey).getClass() == JSONArray.class) {
-					if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
-						json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
-					} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
-						result = getStringValues((JSONArray) json.get(elementKey));
-								//(String) ((JSONArray) json.get(elementKey)).get(0);
+				switch (elementKey) {
+				case "size()":
+				{
+					if (jsonAr != null) {
+						result = String.valueOf(jsonAr.size());
+					} else {
+						result = String.valueOf(json.size());
 					}
-					
-				} else {
-					result = json.getString(elementKey);
 				}
+				break;
+				default:
+				{
+					if (json.get(elementKey).getClass() == JSONArray.class) {
+						if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
+							json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
+						} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
+							jsonAr = (JSONArray) json.get(elementKey);
+							result = getStringValues(jsonAr);
+						}
 
+					} else {
+						result = json.getString(elementKey);
+					}
+				}
+				break;
+				}
+				
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

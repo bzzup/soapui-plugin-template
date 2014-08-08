@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>soap-ahr-json-plugin</artifactId>
-    <version>0.3-plugin</version>
+    <version>0.4-plugin</version>
 
     <name>Soap UI JSON Assertion Plugin</name>
 

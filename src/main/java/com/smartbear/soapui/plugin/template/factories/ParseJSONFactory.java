@@ -38,8 +38,6 @@ import com.eviware.x.form.XFormFactory;
 
 public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
-	
-	
     private static final String ASSERTION_ID = "JSONTestAssertionID";
     private static final String ASSERTION_LABEL = "JSON contains required key - value";
     private static final String KEY_LABEL = "Key";
@@ -59,7 +57,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     @Override
     public AssertionListEntry getAssertionListEntry() {
         return new AssertionListEntry(ASSERTION_ID, ASSERTION_LABEL,
-                "Asserts that JSON contains required element. 'KEY.KEY.KEY = VALUE' format " );
+                "Asserts that JSON contains required element. 'KEY.KEY = VALUE', 'KEY.KEY.size() = VALUE' formats " );
     }
 
     @Override
@@ -125,6 +123,8 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     	    }
             
             JSONObject json;
+            JSONArray jsonAr = null;
+            
 			try {
 				json = (JSONObject) JSONArray.fromObject(content).get(0);
 			} catch (Exception e) {
@@ -137,16 +137,33 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             
 			try {
 				for (String elementKey : hierKeys) {
-					if (json.get(elementKey).getClass() == JSONArray.class) {
-						if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
-							json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
-						} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
-							result = getStringValues((JSONArray) json.get(elementKey));
+					switch (elementKey) {
+					case "size()":
+					{
+						if (jsonAr != null) {
+							result = String.valueOf(jsonAr.size());
+						} else {
+							result = String.valueOf(json.size());
 						}
-
-					} else {
-						result = json.getString(elementKey);
 					}
+					break;
+					default:
+					{
+						if (json.get(elementKey).getClass() == JSONArray.class) {
+							if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
+								json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
+							} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
+								jsonAr = (JSONArray) json.get(elementKey);
+								result = getStringValues(jsonAr);
+							}
+
+						} else {
+							result = json.getString(elementKey);
+						}
+					}
+					break;
+					}
+					
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
