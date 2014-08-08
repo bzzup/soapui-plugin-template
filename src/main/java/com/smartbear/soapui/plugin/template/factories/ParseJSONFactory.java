@@ -43,6 +43,8 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     private static final String KEY_LABEL = "Key";
     private static final String VALUE_LABEL = "Value";
     
+    private static final int CASE_SIZE = 1;
+    
 
     public ParseJSONFactory()
     {
@@ -137,18 +139,13 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             
 			try {
 				for (String elementKey : hierKeys) {
-					switch (elementKey) {
-					case "size()":
-					{
+					if (elementKey.equalsIgnoreCase("size(")) {
 						if (jsonAr != null) {
 							result = String.valueOf(jsonAr.size());
 						} else {
 							result = String.valueOf(json.size());
 						}
-					}
-					break;
-					default:
-					{
+					} else {
 						if (json.get(elementKey).getClass() == JSONArray.class) {
 							if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
 								json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
@@ -160,10 +157,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 						} else {
 							result = json.getString(elementKey);
 						}
-					}
-					break;
-					}
-					
+					}			
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
