@@ -31,18 +31,13 @@ public class Main {
 		String[] hierKeys = key.split("\\.");
 		try {
 			for (String elementKey : hierKeys) {
-				switch (elementKey) {
-				case "size()":
-				{
+				if (elementKey.equalsIgnoreCase("size(")) {
 					if (jsonAr != null) {
 						result = String.valueOf(jsonAr.size());
 					} else {
 						result = String.valueOf(json.size());
 					}
-				}
-				break;
-				default:
-				{
+				} else {
 					if (json.get(elementKey).getClass() == JSONArray.class) {
 						if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
 							json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
@@ -54,10 +49,7 @@ public class Main {
 					} else {
 						result = json.getString(elementKey);
 					}
-				}
-				break;
-				}
-				
+				}			
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
