@@ -14,11 +14,12 @@ public class Main {
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {
-		String key = "longName.size()";
+		String key = "educationLevels.size()";
 		String content = "[{\"id\":\"1142380\",\"code\":\"KHV0002\",\"startDate\":1343772000000,\"endDate\":null,\"elementId\":\"1140100\",\"points\":0,\"educationLevels\":[\"GRS\", \"TEST\"],\"longName\":[{\"locale\":\"no_NO\",\"value\":\"Kunst og håndverk 2. årstrinn\"}],\"shortName\":[{\"locale\":\"no_NO\",\"value\":\"Kunst og håndverk 2. årstrinn\",\"test\":[{\"name\":\"Andrei\",\"surname\":\"Hrabun\"}]}],\"courseGroup\":null}]";
 		//String content = args[0];
 		String result = null;
 		JSONArray jsonAr = null;
+		Boolean isElement = false;
 		
 		content = content.trim();
 	    if (!content.startsWith("[") && !content.endsWith("]")) {
@@ -31,9 +32,11 @@ public class Main {
 		String[] hierKeys = key.split("\\.");
 		try {
 			for (String elementKey : hierKeys) {
-				if (elementKey.equalsIgnoreCase("size(")) {
+				if (elementKey.equalsIgnoreCase("size()")) {
 					if (jsonAr != null) {
 						result = String.valueOf(jsonAr.size());
+					} else if (isElement) {
+						result = "1";
 					} else {
 						result = String.valueOf(json.size());
 					}
@@ -48,6 +51,7 @@ public class Main {
 
 					} else {
 						result = json.getString(elementKey);
+						isElement = true;
 					}
 				}			
 			}

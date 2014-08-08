@@ -126,6 +126,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             
             JSONObject json;
             JSONArray jsonAr = null;
+            Boolean isElement = false;
             
 			try {
 				json = (JSONObject) JSONArray.fromObject(content).get(0);
@@ -139,9 +140,11 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             
 			try {
 				for (String elementKey : hierKeys) {
-					if (elementKey.equalsIgnoreCase("size(")) {
+					if (elementKey.equalsIgnoreCase("size()")) {
 						if (jsonAr != null) {
 							result = String.valueOf(jsonAr.size());
+						} else if (isElement) {
+							result = "1";
 						} else {
 							result = String.valueOf(json.size());
 						}
@@ -156,6 +159,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
 						} else {
 							result = json.getString(elementKey);
+							isElement = true;
 						}
 					}			
 				}
