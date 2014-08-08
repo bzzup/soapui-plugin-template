@@ -14,12 +14,13 @@ public class Main {
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {
-		String key = "educationLevels.size()";
+		String key = "id.size()";
 		String content = "[{\"id\":\"1142380\",\"code\":\"KHV0002\",\"startDate\":1343772000000,\"endDate\":null,\"elementId\":\"1140100\",\"points\":0,\"educationLevels\":[\"GRS\", \"TEST\"],\"longName\":[{\"locale\":\"no_NO\",\"value\":\"Kunst og håndverk 2. årstrinn\"}],\"shortName\":[{\"locale\":\"no_NO\",\"value\":\"Kunst og håndverk 2. årstrinn\",\"test\":[{\"name\":\"Andrei\",\"surname\":\"Hrabun\"}]}],\"courseGroup\":null}]";
 		//String content = args[0];
 		String result = null;
 		JSONArray jsonAr = null;
 		Boolean isElement = false;
+		Boolean isEmptyElement = false;
 		
 		content = content.trim();
 	    if (!content.startsWith("[") && !content.endsWith("]")) {
@@ -35,18 +36,24 @@ public class Main {
 				if (elementKey.equalsIgnoreCase("size()")) {
 					if (jsonAr != null) {
 						result = String.valueOf(jsonAr.size());
-					} else if (isElement) {
+					} else if (isElement && !isEmptyElement) {
 						result = "1";
+					} else if (isEmptyElement) {
+						result = "0";
 					} else {
 						result = String.valueOf(json.size());
 					}
 				} else {
 					if (json.get(elementKey).getClass() == JSONArray.class) {
-						if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
-							json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
-						} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
-							jsonAr = (JSONArray) json.get(elementKey);
-							result = getStringValues(jsonAr);
+						if (((JSONArray) json.get(elementKey)).size() != 0) {
+							if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
+								json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
+							} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
+								jsonAr = (JSONArray) json.get(elementKey);
+								result = getStringValues(jsonAr);
+							}
+						} else {
+							isEmptyElement = true;
 						}
 
 					} else {

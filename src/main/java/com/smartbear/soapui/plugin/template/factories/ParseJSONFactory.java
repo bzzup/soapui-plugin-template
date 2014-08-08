@@ -127,6 +127,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             JSONObject json;
             JSONArray jsonAr = null;
             Boolean isElement = false;
+            Boolean isEmptyElement = false;
             
 			try {
 				json = (JSONObject) JSONArray.fromObject(content).get(0);
@@ -143,18 +144,24 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 					if (elementKey.equalsIgnoreCase("size()")) {
 						if (jsonAr != null) {
 							result = String.valueOf(jsonAr.size());
-						} else if (isElement) {
+						} else if (isElement && !isEmptyElement) {
 							result = "1";
+						} else if (isEmptyElement) {
+							result = "0";
 						} else {
 							result = String.valueOf(json.size());
 						}
 					} else {
 						if (json.get(elementKey).getClass() == JSONArray.class) {
-							if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
-								json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
-							} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
-								jsonAr = (JSONArray) json.get(elementKey);
-								result = getStringValues(jsonAr);
+							if (((JSONArray) json.get(elementKey)).size() != 0) {
+								if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
+									json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
+								} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
+									jsonAr = (JSONArray) json.get(elementKey);
+									result = getStringValues(jsonAr);
+								}
+							} else {
+								isEmptyElement = true;
 							}
 
 						} else {
