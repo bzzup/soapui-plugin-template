@@ -42,9 +42,6 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     private static final String ASSERTION_LABEL = "JSON contains required key - value";
     private static final String KEY_LABEL = "Key";
     private static final String VALUE_LABEL = "Value";
-    
-    private static final int CASE_SIZE = 1;
-    
 
     public ParseJSONFactory()
     {
@@ -126,6 +123,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             
             JSONObject json;
             JSONArray jsonAr = null;
+            JSONArray prevArr = null;
             Boolean isElement = false;
             Boolean isEmptyElement = false;
             
@@ -149,12 +147,17 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 						} else if (isEmptyElement) {
 							result = "0";
 						} else {
-							result = String.valueOf(json.size());
+							if (prevArr == null) {
+								result = String.valueOf(json.size());
+							} else {
+								result = String.valueOf(prevArr.size());
+							}
 						}
 					} else {
 						if (json.get(elementKey).getClass() == JSONArray.class) {
 							if (((JSONArray) json.get(elementKey)).size() != 0) {
 								if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
+									prevArr = (JSONArray) json.get(elementKey);
 									json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
 								} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
 									jsonAr = (JSONArray) json.get(elementKey);
