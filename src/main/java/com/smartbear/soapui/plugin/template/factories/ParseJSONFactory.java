@@ -185,7 +185,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     						+ propValue + " != " + result));
     			}
             } else {
-            	findKeys(json, null);
+            	findKeys(JSONArray.fromObject(content), null);
             	boolean result = false;
             	
             	for (JsonElement jsonElement : elementsArray) {

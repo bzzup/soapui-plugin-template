@@ -17,7 +17,8 @@ public class Main {
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {
 		String key = "items.size()";
-		String content = "[{\"personId\":\"SOA01-1111\",\"unitId\":\"18041399\",\"schoolYear\":\"2015\",\"gradeLevel\":\"5\",\"adjustments\":[],\"array\":[\"item1\",\"item2\",\"item3\"],\"items\":[{\"courseId\":\"18041425\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[\"aid1\",\"aid2\"],\"subitems\":[{\"subitem1\":\"value1\",\"subitemArray\":[\"11\",\"223\"]},{}]},{\"courseId\":\"18041426\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[]}]}]";
+		String content = "[{\"code\":\"1\"},{\"code\":\"2\"},{\"code\":\"3\"},{\"code\":\"4\"},{\"code\":\"5\"}]";
+		//String content = "[{\"personId\":\"SOA01-1111\",\"unitId\":\"18041399\",\"schoolYear\":\"2015\",\"gradeLevel\":\"5\",\"adjustments\":[],\"array\":[\"item1\",\"item2\",\"item3\"],\"items\":[{\"courseId\":\"18041425\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[\"aid1\",\"aid2\"],\"subitems\":[{\"subitem1\":\"value1\",\"subitemArray\":[\"11\",\"223\"]},{}]},{\"courseId\":\"18041426\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[]}]}]";
 		//String content = args[0];
 		String result = null;
 		JSONArray jsonAr = null;
@@ -30,7 +31,7 @@ public class Main {
 	    	content = "["+content+"]";
 	    }
  	    JSONObject json = (JSONObject) JSONArray.fromObject(content).getJSONObject(0);
-	    findKeys(json, null);
+	    findKeys(JSONArray.fromObject(content), null);
 	    
 	    for (JsonElement element : elementsArray) {
 			System.out.println(element.getKey()+" : "+element.getValue());
@@ -84,8 +85,8 @@ public class Main {
 	}
 	
 	static void test () {
-		String testKey = "items.subitems.subitem1";
-		String testValue = "value2";
+		String testKey = "code";
+		String testValue = "3";
 		boolean result = false;
 		
 		System.out.println("Looking for ["+testKey+" : "+testValue+"]...");
