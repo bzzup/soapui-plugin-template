@@ -1,18 +1,18 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.bzzup.entity.JsonElement;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.model.testsuite.AssertionException;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 
 public class Main {
 
 	private static HashMap<String, String> keyValueMap = new HashMap<String, String>();
-	private static ArrayList<JsonElement> elementsArray = new ArrayList<>();
+	private static ArrayList<JsonElement> elementsArray = new ArrayList<JsonElement>();
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {

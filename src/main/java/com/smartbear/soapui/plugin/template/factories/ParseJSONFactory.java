@@ -83,7 +83,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     	private String key;
     	private String value;
     	private String result;
-    	private ArrayList<JsonElement> elementsArray = new ArrayList<>();
+    	private ArrayList<JsonElement> elementsArray = new ArrayList<JsonElement>();
     	
         public JSONTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
