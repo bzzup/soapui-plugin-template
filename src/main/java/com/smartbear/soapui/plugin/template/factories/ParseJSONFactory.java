@@ -293,6 +293,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             if (dialog.getReturnValue() == XFormDialog.OK_OPTION) {
                 key = values.get(KEY_LABEL);
                 value = values.get(VALUE_LABEL);
+                isContains = values.getBoolean(CONTAINS);
             }
 
             this.setName("JSON contains [\"" + key + "\" : \"" + value +"\"]");
@@ -307,7 +308,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
             mainForm.addTextField(KEY_LABEL, "Key to check for", XForm.FieldType.TEXT).setWidth(40);
             mainForm.addTextField(VALUE_LABEL, "Value to check for", XForm.FieldType.TEXTAREA).setWidth(40);
-            mainForm.addCheckBox(CONTAINS, "Switch mode to \"contains\"");
+            mainForm.addCheckBox(CONTAINS, null);
 
             dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SIMPLE_CONTAINS_HELP_URL),
                     "Specify options. Format: Key.Key.Key = Value", UISupport.TOOL_ICON);
