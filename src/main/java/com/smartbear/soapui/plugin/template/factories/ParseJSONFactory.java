@@ -1,7 +1,6 @@
 package com.smartbear.soapui.plugin.template.factories;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import net.sf.json.JSONArray;
@@ -10,6 +9,7 @@ import net.sf.json.JSONSerializer;
 
 import org.apache.xmlbeans.XmlObject;
 
+import com.bzzup.entity.JsonElement;
 import com.eviware.soapui.config.TestAssertionConfig;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionCategoryMapping;
 import com.eviware.soapui.impl.wsdl.panels.assertions.AssertionListEntry;
@@ -42,6 +42,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     private static final String ASSERTION_LABEL = "JSON contains required key - value";
     private static final String KEY_LABEL = "Key";
     private static final String VALUE_LABEL = "Value";
+    private static final String CONTAINS = "Switch to \"contains\"";
 
     public ParseJSONFactory()
     {
@@ -78,10 +79,11 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
     	private XFormDialog dialog;
     	
+    	private boolean isContains;
     	private String key;
     	private String value;
     	private String result;
-    	private HashMap<String, String> keyValueMap = new HashMap<String, String>();
+    	private ArrayList<JsonElement> elementsArray = new ArrayList<>();
     	
         public JSONTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
@@ -89,6 +91,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(getConfiguration());
             key = reader.readString("key", "");
             value = reader.readString("value", "");
+            isContains = reader.readBoolean("contains", false);
         }
 
         @Override
@@ -132,57 +135,72 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 			} catch (Exception e) {
 				throw new AssertionException( new AssertionError("Can't parse content to JSONObject"));
 			}
-            
-            findKeys(json);
-            
-            String[] hierKeys = key.split("\\.");
-            
-			try {
-				for (String elementKey : hierKeys) {
-					if (elementKey.equalsIgnoreCase("size()")) {
-						if (jsonAr != null) {
-							result = String.valueOf(jsonAr.size());
-						} else if (isElement && !isEmptyElement) {
-							result = "1";
-						} else if (isEmptyElement) {
-							result = "0";
-						} else {
-							if (prevArr == null) {
-								result = String.valueOf(json.size());
-							} else {
-								result = String.valueOf(prevArr.size());
-							}
-						}
-					} else {
-						if (json.get(elementKey).getClass() == JSONArray.class) {
-							if (((JSONArray) json.get(elementKey)).size() != 0) {
-								if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
-									prevArr = (JSONArray) json.get(elementKey);
-									json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
-								} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
-									jsonAr = (JSONArray) json.get(elementKey);
-									result = getStringValues(jsonAr);
-								}
-							} else {
-								isEmptyElement = true;
-							}
 
-						} else {
-							result = json.getString(elementKey);
-							isElement = true;
-						}
-					}			
-				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				throw new AssertionException(new AssertionError(key + " : " + propValue + " not found"));
-			}
+            if (!isContains) {
+            	String[] hierKeys = key.split("\\.");
+                
+    			try {
+    				for (String elementKey : hierKeys) {
+    					if (elementKey.equalsIgnoreCase("size()")) {
+    						if (jsonAr != null) {
+    							result = String.valueOf(jsonAr.size());
+    						} else if (isElement && !isEmptyElement) {
+    							result = "1";
+    						} else if (isEmptyElement) {
+    							result = "0";
+    						} else {
+    							if (prevArr == null) {
+    								result = String.valueOf(json.size());
+    							} else {
+    								result = String.valueOf(prevArr.size());
+    							}
+    						}
+    					} else {
+    						if (json.get(elementKey).getClass() == JSONArray.class) {
+    							if (((JSONArray) json.get(elementKey)).size() != 0) {
+    								if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
+    									prevArr = (JSONArray) json.get(elementKey);
+    									json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
+    								} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
+    									jsonAr = (JSONArray) json.get(elementKey);
+    									result = getStringValues(jsonAr);
+    								}
+    							} else {
+    								isEmptyElement = true;
+    							}
 
-			if (!result.equals(propValue)) {
-				throw new AssertionException(new AssertionError("Expected "
-						+ propValue + " != " + result));
-			}
+    						} else {
+    							result = json.getString(elementKey);
+    							isElement = true;
+    						}
+    					}			
+    				}
+    			} catch (Exception e) {
+    				// TODO Auto-generated catch block
+    				throw new AssertionException(new AssertionError(key + " : " + propValue + " not found"));
+    			}
 
+    			if (!result.equals(propValue)) {
+    				throw new AssertionException(new AssertionError("Expected "
+    						+ propValue + " != " + result));
+    			}
+            } else {
+            	findKeys(json, null);
+            	boolean result = false;
+            	
+            	for (JsonElement jsonElement : elementsArray) {
+        			if (jsonElement.getKey().equalsIgnoreCase(key)) { 
+        				if (jsonElement.getValue().contains(propValue)) {
+        					result = true;
+        				}
+        			}
+        		}
+            	
+            	if (result == false) {
+            		throw new AssertionException(new AssertionError(key + " : " + propValue + " not found"));
+            	}
+            }
+            
             return "OK";
         }
         
@@ -194,14 +212,63 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     		return result.substring(0, result.length()-1);
     	}
         
-		private void findKeys(JSONObject object) {
-			for (Object key : object.keySet()) {
-				if (object.get(key).getClass() == JSONObject.class) {
-					findKeys((JSONObject) object.get(key));
+		private void findKeys(Object object, String key) {
+			if (object.getClass() == JSONObject.class) {
+				JSONObject jsonObject = (JSONObject) object;
+				scanForElements(jsonObject, key);
+			} else if (object.getClass() == JSONArray.class) {
+				JSONArray jsonArray = (JSONArray) object;
+				if (jsonArray.size() != 0) {
+					for (Object obj : jsonArray) {
+						if (obj.getClass() == JSONObject.class) {
+							scanForElements((JSONObject) obj, key);
+						} else if (obj.getClass() == String.class) {
+							putElement(buildKey(null, key), getStringValues(jsonArray));
+							break;
+						} else {
+							findKeys(obj, null);
+						}
+					}
 				} else {
-					keyValueMap.put(String.valueOf(key), String.valueOf(object.get(key)));
+					putElement(buildKey(null, key), null);
 				}
+				
+			} else if (object == null) {
+				putElement(buildKey(null, key), null);
+			} else {
+				String res = object.getClass().toString();
 			}
+		}
+		
+		private void scanForElements(JSONObject obj, String parentKey) {
+			if (!obj.keySet().isEmpty()) {
+				for (Object key : obj.keySet()) {
+					if ((obj.get(key).getClass() == JSONObject.class) || (obj.get(key).getClass() == JSONArray.class)) {
+						findKeys(obj.get(key), buildKey(parentKey, key.toString()));
+					}  else {
+						putElement(buildKey(parentKey, key.toString()), String.valueOf(obj.get(key)));
+					}
+				}
+			} else {
+				putElement(buildKey(parentKey, null), null);
+			}
+			
+		}
+		
+		private void putElement(String key, String value) {
+			elementsArray.add(new JsonElement(key, value));
+		}
+		
+		private String buildKey(String parentKey, String currentKey) {
+			String key = "";
+			if ((parentKey != null) && (currentKey != null)) {
+				key = parentKey + "." + currentKey;
+			} else if ((parentKey == null) && (currentKey != null)) {
+				key = currentKey;
+			} else if ((parentKey != null) && (currentKey == null)) {
+				key = parentKey;
+			}
+			return key;
 		}
         
         public boolean configure() {
@@ -211,19 +278,15 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
         	
         	key = key.trim();
         	value = value.trim();
-            
 
             if (key == null || key.trim().length() == 0) {
             	key = "id";
             }
             
-//            if (valueValue == null || valueValue.trim().length() == 0) {
-//            	valueValue = "1";
-//            }
-            
             StringToStringMap values = new StringToStringMap();
             values.put(KEY_LABEL, key);
             values.put(VALUE_LABEL, value);
+            values.put(CONTAINS, isContains);
             
             values = dialog.show(values);
             
@@ -231,7 +294,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
                 key = values.get(KEY_LABEL);
                 value = values.get(VALUE_LABEL);
             }
-            
+
             this.setName("JSON contains [\"" + key + "\" : \"" + value +"\"]");
             
             setConfiguration(createConfiguration());
@@ -244,6 +307,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 
             mainForm.addTextField(KEY_LABEL, "Key to check for", XForm.FieldType.TEXT).setWidth(40);
             mainForm.addTextField(VALUE_LABEL, "Value to check for", XForm.FieldType.TEXTAREA).setWidth(40);
+            mainForm.addCheckBox(CONTAINS, "Switch mode to \"contains\"");
 
             dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SIMPLE_CONTAINS_HELP_URL),
                     "Specify options. Format: Key.Key.Key = Value", UISupport.TOOL_ICON);
@@ -253,6 +317,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
             builder.add("key", key.trim());
             builder.add("value", value.trim());
+            builder.add("contains", isContains);
             return builder.finish();
         }
         

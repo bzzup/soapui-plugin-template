@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.bzzup.entity.JsonElement;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.model.testsuite.AssertionException;
 
@@ -11,11 +12,12 @@ import net.sf.json.JSONObject;
 public class Main {
 
 	private static HashMap<String, String> keyValueMap = new HashMap<String, String>();
-	
+	private static ArrayList<JsonElement> elementsArray = new ArrayList<>();
+
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {
 		String key = "items.size()";
-		String content = "[{\"personId\":\"SOA01-1111\",\"unitId\":\"18041399\",\"schoolYear\":\"2015\",\"gradeLevel\":\"5\",\"adjustments\":[],\"items\":[{\"courseId\":\"18041425\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[]},{\"courseId\":\"18041426\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[]}]}]";
+		String content = "[{\"personId\":\"SOA01-1111\",\"unitId\":\"18041399\",\"schoolYear\":\"2015\",\"gradeLevel\":\"5\",\"adjustments\":[],\"array\":[\"item1\",\"item2\",\"item3\"],\"items\":[{\"courseId\":\"18041425\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[\"aid1\",\"aid2\"],\"subitems\":[{\"subitem1\":\"value1\",\"subitemArray\":[\"11\",\"223\"]},{}]},{\"courseId\":\"18041426\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[]}]}]";
 		//String content = args[0];
 		String result = null;
 		JSONArray jsonAr = null;
@@ -28,7 +30,13 @@ public class Main {
 	    	content = "["+content+"]";
 	    }
  	    JSONObject json = (JSONObject) JSONArray.fromObject(content).getJSONObject(0);
-	    findKeys(json);
+	    findKeys(json, null);
+	    
+	    for (JsonElement element : elementsArray) {
+			System.out.println(element.getKey()+" : "+element.getValue());
+		}
+	    
+	    test();
 	    
 		String[] hierKeys = key.split("\\.");
 		try {
@@ -75,6 +83,24 @@ public class Main {
 	    String x = result;
 	}
 	
+	static void test () {
+		String testKey = "items.subitems.subitem1";
+		String testValue = "value2";
+		boolean result = false;
+		
+		System.out.println("Looking for ["+testKey+" : "+testValue+"]...");
+		
+		for (JsonElement jsonElement : elementsArray) {
+			if (jsonElement.getKey().equalsIgnoreCase(testKey)) { 
+				if (jsonElement.getValue().contains(testValue)) {
+					result = true;
+				}
+			}
+		}
+		
+		System.out.println("Result : "+result);
+	}
+	
 	static String getStringValues(JSONArray array) {
 		String result = "";
 		for (int i = 0; i < array.size(); i++) {
@@ -83,14 +109,62 @@ public class Main {
 		return result.substring(0, result.length()-1);
 	}
 	
-	static void findKeys(JSONObject object) {
-			for (Object key : object.keySet()) {
-				if (object.get(key).getClass() == JSONObject.class) {
-					findKeys((JSONObject) object.get(key));
+	static void findKeys(Object object, String key) {
+		if (object.getClass() == JSONObject.class) {
+			JSONObject jsonObject = (JSONObject) object;
+			scanForElements(jsonObject, key);
+		} else if (object.getClass() == JSONArray.class) {
+			JSONArray jsonArray = (JSONArray) object;
+			if (jsonArray.size() != 0) {
+				for (Object obj : jsonArray) {
+					if (obj.getClass() == JSONObject.class) {
+						scanForElements((JSONObject) obj, key);
+					} else if (obj.getClass() == String.class) {
+						putElement(buildKey(null, key), getStringValues(jsonArray));
+						break;
+					} else {
+						findKeys(obj, null);
+					}
+				}
+			} else {
+				putElement(buildKey(null, key), null);
+			}
+			
+		} else if (object == null) {
+			putElement(buildKey(null, key), null);
+		} else {
+			String res = object.getClass().toString();
+		}
+	}
+	
+	static void scanForElements(JSONObject obj, String parentKey) {
+		if (!obj.keySet().isEmpty()) {
+			for (Object key : obj.keySet()) {
+				if ((obj.get(key).getClass() == JSONObject.class) || (obj.get(key).getClass() == JSONArray.class)) {
+					findKeys(obj.get(key), buildKey(parentKey, key.toString()));
 				}  else {
-					keyValueMap.put(String.valueOf(key), String.valueOf(object.get(key)));
+					putElement(buildKey(parentKey, key.toString()), String.valueOf(obj.get(key)));
 				}
 			}
+		} else {
+			putElement(buildKey(parentKey, null), null);
 		}
+		
+	}
+	
+	static String buildKey(String parentKey, String currentKey) {
+		String key = "";
+		if ((parentKey != null) && (currentKey != null)) {
+			key = parentKey + "." + currentKey;
+		} else if ((parentKey == null) && (currentKey != null)) {
+			key = currentKey;
+		} else if ((parentKey != null) && (currentKey == null)) {
+			key = parentKey;
+		}
+		return key;
+	}
 
+	static void putElement(String key, String value) {
+		elementsArray.add(new JsonElement(key, value));
+	}
 }
