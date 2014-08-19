@@ -190,7 +190,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             	
             	for (JsonElement jsonElement : elementsArray) {
         			if (jsonElement.getKey().equalsIgnoreCase(key)) { 
-        				if (jsonElement.getValue().contains(propValue)) {
+        				if (jsonElement.getValue().equalsIgnoreCase(propValue)) {
         					result = true;
         				}
         			}
