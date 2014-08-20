@@ -83,7 +83,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     	private String key;
     	private String value;
     	private String result;
-    	private ArrayList<JsonElement> elementsArray = new ArrayList<JsonElement>();
+    	private ArrayList<JsonElement> elementsArray;
     	
         public JSONTestAssertion(TestAssertionConfig assertionConfig, Assertable modelItem)
         {
@@ -185,6 +185,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     						+ propValue + " != " + result));
     			}
             } else {
+            	elementsArray = new ArrayList<JsonElement>();
             	findKeys(JSONArray.fromObject(content), null);
             	boolean result = false;
             	
