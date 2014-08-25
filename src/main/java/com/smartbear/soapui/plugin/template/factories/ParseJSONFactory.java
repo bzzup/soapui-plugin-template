@@ -156,7 +156,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     							}
     						}
     					} else {
-    						if (json.get(elementKey).getClass() == JSONArray.class) {
+    						if ((json.get(elementKey) != null) && (json.get(elementKey).getClass() == JSONArray.class)) {
     							if (((JSONArray) json.get(elementKey)).size() != 0) {
     								if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
     									prevArr = (JSONArray) json.get(elementKey);
@@ -169,6 +169,9 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     								isEmptyElement = true;
     							}
 
+    						} else if (json.get(elementKey) == null) {
+    							result = null;
+    							isElement = true;
     						} else {
     							result = json.getString(elementKey);
     							isElement = true;
@@ -191,7 +194,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
             	
             	for (JsonElement jsonElement : elementsArray) {
         			if (jsonElement.getKey().equalsIgnoreCase(key)) { 
-        				if (jsonElement.getValue().equalsIgnoreCase(propValue)) {
+        				if ((jsonElement.getValue() != null) && (jsonElement.getValue().equalsIgnoreCase(propValue))) {
         					result = true;
         				}
         			}
@@ -304,7 +307,7 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
         }
 
         private void buildDialog() {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Contains Assertion");
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Validate JSON Assertion");
             XForm mainForm = builder.createForm("Basic");
 
             mainForm.addTextField(KEY_LABEL, "Key to check for", XForm.FieldType.TEXT).setWidth(40);

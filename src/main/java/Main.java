@@ -16,8 +16,8 @@ public class Main {
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {
-		String key = "items.size()";
-		String content = "[{\"code\":\"5\"},{\"code\":\"6\"},{\"code\":\"7\"},{\"code\":\"8\"},{\"code\":\"9\"},{\"code\":\"10\"}]";
+		String key = "code.startDate";
+		String content = "{\"id\":\"18058767\",\"name\":\"Form 1A\",\"shortName\":\"1A\",\"type\":\"FORM\",\"gradeLevels\":[\"1\"],\"referenced\":[{\"id\":\"18058772\",\"name\":\"Merged Form\",\"shortName\":\"MRG01\",\"type\":\"MERGED_FORM\",\"gradeLevels\":null,\"referenced\":null,\"members\":null,\"unitId\":null,\"schoolYear\":null,\"startDate\":null,\"endDate\":null}],\"members\":null,\"unitId\":\"18055809\",\"schoolYear\":\"2015\",\"startDate\":1406844000000,\"endDate\":1438293600000}";
 		//String content = "[{\"personId\":\"SOA01-1111\",\"unitId\":\"18041399\",\"schoolYear\":\"2015\",\"gradeLevel\":\"5\",\"adjustments\":[],\"array\":[\"item1\",\"item2\",\"item3\"],\"items\":[{\"courseId\":\"18041425\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[\"aid1\",\"aid2\"],\"subitems\":[{\"subitem1\":\"value1\",\"subitemArray\":[\"11\",\"223\"]},{}]},{\"courseId\":\"18041426\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[]}]}]";
 		//String content = args[0];
 		String result = null;
@@ -57,7 +57,7 @@ public class Main {
 						}
 					}
 				} else {
-					if (json.get(elementKey).getClass() == JSONArray.class) {
+					if ((json.get(elementKey) != null) && (json.get(elementKey).getClass() == JSONArray.class)) {
 						if (((JSONArray) json.get(elementKey)).size() != 0) {
 							if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
 								prevArr = (JSONArray) json.get(elementKey);
@@ -70,6 +70,9 @@ public class Main {
 							isEmptyElement = true;
 						}
 
+					} else if (json.get(elementKey) == null) {
+						result = null;
+						isElement = true;
 					} else {
 						result = json.getString(elementKey);
 						isElement = true;
@@ -80,8 +83,6 @@ public class Main {
 			// TODO Auto-generated catch block
 			throw new AssertionException(new AssertionError("Entered key doesn't exist"));
 		}
-	    
-	    String x = result;
 	}
 	
 	static void test () {
@@ -93,7 +94,7 @@ public class Main {
 		
 		for (JsonElement jsonElement : elementsArray) {
 			if (jsonElement.getKey().equalsIgnoreCase(testKey)) { 
-				if (jsonElement.getValue().contains(testValue)) {
+				if ((jsonElement.getValue() != null) && (jsonElement.getValue().contains(testValue))) {
 					result = true;
 				}
 			}
