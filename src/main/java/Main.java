@@ -16,8 +16,8 @@ public class Main {
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws AssertionException {
-		String key = "code.startDate";
-		String content = "{\"id\":\"18058767\",\"name\":\"Form 1A\",\"shortName\":\"1A\",\"type\":\"FORM\",\"gradeLevels\":[\"1\"],\"referenced\":[{\"id\":\"18058772\",\"name\":\"Merged Form\",\"shortName\":\"MRG01\",\"type\":\"MERGED_FORM\",\"gradeLevels\":null,\"referenced\":null,\"members\":null,\"unitId\":null,\"schoolYear\":null,\"startDate\":null,\"endDate\":null}],\"members\":null,\"unitId\":\"18055809\",\"schoolYear\":\"2015\",\"startDate\":1406844000000,\"endDate\":1438293600000}";
+		String key = "courseSubjectIds.top";
+		String content = "{\"id\":\"25434128\",\"code\":\"SOA01\",\"top\":\"SOA Tests\",\"educationLevel\":\"GRS\",\"courseSubjectIds\":[]}";
 		//String content = "[{\"personId\":\"SOA01-1111\",\"unitId\":\"18041399\",\"schoolYear\":\"2015\",\"gradeLevel\":\"5\",\"adjustments\":[],\"array\":[\"item1\",\"item2\",\"item3\"],\"items\":[{\"courseId\":\"18041425\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[\"aid1\",\"aid2\"],\"subitems\":[{\"subitem1\":\"value1\",\"subitemArray\":[\"11\",\"223\"]},{}]},{\"courseId\":\"18041426\",\"subjectId\":null,\"minutes\":500,\"adjustments\":[],\"aids\":[]}]}]";
 		//String content = args[0];
 		String result = null;
@@ -57,33 +57,42 @@ public class Main {
 						}
 					}
 				} else {
-					if ((json.get(elementKey) != null) && (json.get(elementKey).getClass() == JSONArray.class)) {
-						if (((JSONArray) json.get(elementKey)).size() != 0) {
-							if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
-								prevArr = (JSONArray) json.get(elementKey);
-								json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
-							} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
-								jsonAr = (JSONArray) json.get(elementKey);
-								result = getStringValues(jsonAr);
+					if (!isEmptyElement) {
+						if ((json.get(elementKey) != null)
+								&& (json.get(elementKey).getClass() == JSONArray.class)) {
+							if (((JSONArray) json.get(elementKey)).size() != 0) {
+								if (((JSONArray) json.get(elementKey)).get(0)
+										.getClass() == JSONObject.class) {
+									prevArr = (JSONArray) json.get(elementKey);
+									json = (JSONObject) ((JSONArray) json
+											.get(elementKey)).get(0);
+								} else if (((JSONArray) json.get(elementKey))
+										.get(0).getClass() == String.class) {
+									jsonAr = (JSONArray) json.get(elementKey);
+									result = getStringValues(jsonAr);
+								}
+							} else {
+								isEmptyElement = true;
+								//break;
 							}
+
+						} else if (json.get(elementKey) == null) {
+							result = null;
+							isElement = true;
+							break;
 						} else {
-							isEmptyElement = true;
+							result = json.getString(elementKey);
+							isElement = true;
 							break;
 						}
-
-					} else if (json.get(elementKey) == null) {
-						result = null;
-						isElement = true;
-						break;
-					} else {
-						result = json.getString(elementKey);
-						isElement = true;
-						break;
 					}
 				}			
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			throw new AssertionException(new AssertionError("Entered key doesn't exist"));
+		}
+		if (result == null) {
 			throw new AssertionException(new AssertionError("Entered key doesn't exist"));
 		}
 	}

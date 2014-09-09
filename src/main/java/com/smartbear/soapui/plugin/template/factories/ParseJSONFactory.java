@@ -156,29 +156,39 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
     							}
     						}
     					} else {
-    						if ((json.get(elementKey) != null) && (json.get(elementKey).getClass() == JSONArray.class)) {
-    							if (((JSONArray) json.get(elementKey)).size() != 0) {
-    								if (((JSONArray) json.get(elementKey)).get(0).getClass() == JSONObject.class) {
-    									prevArr = (JSONArray) json.get(elementKey);
-    									json = (JSONObject) ((JSONArray) json.get(elementKey)).get(0);
-    								} else if (((JSONArray) json.get(elementKey)).get(0).getClass() == String.class) {
-    									jsonAr = (JSONArray) json.get(elementKey);
-    									result = getStringValues(jsonAr);
-    								}
-    							} else {
-    								isEmptyElement = true;
-    								break;
-    							}
+    						if (!isEmptyElement) {
+								if ((json.get(elementKey) != null)
+										&& (json.get(elementKey).getClass() == JSONArray.class)) {
+									if (((JSONArray) json.get(elementKey))
+											.size() != 0) {
+										if (((JSONArray) json.get(elementKey))
+												.get(0).getClass() == JSONObject.class) {
+											prevArr = (JSONArray) json
+													.get(elementKey);
+											json = (JSONObject) ((JSONArray) json
+													.get(elementKey)).get(0);
+										} else if (((JSONArray) json
+												.get(elementKey)).get(0)
+												.getClass() == String.class) {
+											jsonAr = (JSONArray) json
+													.get(elementKey);
+											result = getStringValues(jsonAr);
+										}
+									} else {
+										isEmptyElement = true;
+										//break;
+									}
 
-    						} else if (json.get(elementKey) == null) {
-    							result = null;
-    							isElement = true;
-    							break;
-    						} else {
-    							result = json.getString(elementKey);
-    							isElement = true;
-    							break;
-    						}
+								} else if (json.get(elementKey) == null) {
+									result = null;
+									isElement = true;
+									break;
+								} else {
+									result = json.getString(elementKey);
+									isElement = true;
+									break;
+								}
+							}
     					}			
     				}
     			} catch (Exception e) {
