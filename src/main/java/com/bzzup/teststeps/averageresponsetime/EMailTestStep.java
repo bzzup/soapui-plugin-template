@@ -171,19 +171,19 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 		try {
 			WsdlTestCaseRunner suiteRunner = (WsdlTestCaseRunner) testRunner.getRunContext().getTestRunner();
 			WsdlTestSuiteRunner testSuite = new WsdlTestSuiteRunner((WsdlTestSuite) context.getTestCase().getTestSuite(), null);
-			//WsdlTestSuiteRunner
-			//context.getTestCase().getTestSuite().getProject().get
+			SoapUI.log(testSuite.getTestSuite().getName());
 			List<TestCaseRunner> testCaseResults = testSuite.getResults();
 			for (TestCaseRunner testCaseRunner : testCaseResults) {
 				List<TestStepResult> testStepResults = testCaseRunner.getResults();
 				for (TestStepResult testStepResult : testStepResults) {
+					SoapUI.log(testStepResult.getTestStep().getName());
 					if (testStepResult.getTimeTaken() != 0) {
 						stepsCount ++;
 						averageTime += testStepResult.getTimeTaken();
 					}
 				}
 			}
-			this.message = "Time: "+String.valueOf(averageTime / stepsCount)+ ", steps: " + stepsCount + ", total time:" + averageTime;
+			this.message = "steps: " + stepsCount + ", total time:" + averageTime;
 
 		}
 		catch( Exception ex )
