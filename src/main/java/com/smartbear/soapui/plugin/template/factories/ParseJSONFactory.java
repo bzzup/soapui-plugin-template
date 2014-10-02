@@ -176,7 +176,6 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
 										}
 									} else {
 										isEmptyElement = true;
-										//break;
 									}
 
 								} else if (json.get(elementKey) == null) {

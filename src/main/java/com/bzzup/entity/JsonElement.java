@@ -5,11 +5,6 @@ public class JsonElement {
 	private String key;
 	private String value;
 	private String type;
-	private int size;
-	private int childSize;
-	
-	public static final String TYPE_ELEMENT = "Element";
-	public static final String TYPE_NODE = "Node";
 	
 	public JsonElement(String key, String value) {
 		this.key = key;
