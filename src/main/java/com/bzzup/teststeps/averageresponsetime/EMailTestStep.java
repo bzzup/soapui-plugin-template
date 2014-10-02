@@ -22,6 +22,7 @@ import com.eviware.soapui.impl.wsdl.teststeps.WsdlTestStepWithProperties;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansion;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionContainer;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionUtils;
+import com.eviware.soapui.model.testsuite.MessageExchangeTestStepResult;
 import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestCaseRunContext;
 import com.eviware.soapui.model.testsuite.TestCaseRunner;
@@ -165,6 +166,15 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 //			Transport.send( msg );
 //			result.setStatus( TestStepStatus.OK );
 //		}
+
+
+		for (TestCase tc : this.getTestCase().getTestSuite().getTestCaseList()) {
+			for (TestStep ts : tc.getTestStepList()) {
+				for (String prop : ts.getPropertyNames()) {
+					SoapUI.log(prop);
+				}
+			}
+		}
 		
 		long averageTime = 0;
 		int stepsCount = 0;
