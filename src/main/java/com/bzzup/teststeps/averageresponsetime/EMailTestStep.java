@@ -166,7 +166,7 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 			for (TestCase testCase : testCases) {
 				List<TestStep> testSteps = testCase.getTestStepList();
 				for (TestStep testStep : testSteps) {
-					this.message += "|||"+testRunner.getTestCase().getLabel();
+					this.message += "|||"+testRunner.getTestCase().getTestStepByName(testStep.getName()).getName();
 				}
 			}
 		}
