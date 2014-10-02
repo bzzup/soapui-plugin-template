@@ -171,8 +171,9 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 		try {
 			WsdlTestCaseRunner suiteRunner = (WsdlTestCaseRunner) testRunner.getRunContext().getTestRunner();
 			WsdlTestSuiteRunner testSuite = new WsdlTestSuiteRunner((WsdlTestSuite) context.getTestCase().getTestSuite(), null);
-			SoapUI.log(testSuite.getTestSuite().getName());
+			SoapUI.log("TS: test suite: "+testSuite.getTestSuite().getName());
 			List<TestCaseRunner> testCaseResults = testSuite.getResults();
+			SoapUI.log("TS: test suite results: "+testCaseResults.size());
 			for (TestCaseRunner testCaseRunner : testCaseResults) {
 				List<TestStepResult> testStepResults = testCaseRunner.getResults();
 				for (TestStepResult testStepResult : testStepResults) {
