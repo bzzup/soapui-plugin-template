@@ -13,7 +13,10 @@ import javax.mail.internet.MimeMessage;
 
 import com.eviware.soapui.SoapUI;
 import com.eviware.soapui.config.TestStepConfig;
+import com.eviware.soapui.impl.wsdl.WsdlTestSuite;
 import com.eviware.soapui.impl.wsdl.testcase.WsdlTestCase;
+import com.eviware.soapui.impl.wsdl.testcase.WsdlTestCaseRunner;
+import com.eviware.soapui.impl.wsdl.testcase.WsdlTestSuiteRunner;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlTestStepResult;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlTestStepWithProperties;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansion;
@@ -166,8 +169,11 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 		long averageTime = 0;
 		int stepsCount = 0;
 		try {
-			TestSuiteRunner suiteRunner = (TestSuiteRunner) testRunner.getRunContext().getTestRunner();
-			List<TestCaseRunner> testCaseResults = suiteRunner.getResults();
+			WsdlTestCaseRunner suiteRunner = (WsdlTestCaseRunner) testRunner.getRunContext().getTestRunner();
+			WsdlTestSuiteRunner testSuite = new WsdlTestSuiteRunner((WsdlTestSuite) context.getTestCase().getTestSuite(), null);
+			//WsdlTestSuiteRunner
+			//context.getTestCase().getTestSuite().getProject().get
+			List<TestCaseRunner> testCaseResults = testSuite.getResults();
 			for (TestCaseRunner testCaseRunner : testCaseResults) {
 				List<TestStepResult> testStepResults = testCaseRunner.getResults();
 				for (TestStepResult testStepResult : testStepResults) {
