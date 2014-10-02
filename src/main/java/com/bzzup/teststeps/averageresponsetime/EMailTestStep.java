@@ -25,6 +25,7 @@ import com.eviware.soapui.model.testsuite.TestCaseRunner;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestStepResult;
 import com.eviware.soapui.model.testsuite.TestStepResult.TestStepStatus;
+import com.eviware.soapui.model.testsuite.TestSuiteRunner;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationBuilder;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
@@ -161,14 +162,23 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 //			Transport.send( msg );
 //			result.setStatus( TestStepStatus.OK );
 //		}
+		
+		long averageTime = 0;
+		int stepsCount = 0;
 		try {
-			List<TestCase> testCases = testRunner.getTestCase().getTestSuite().getTestCaseList();
-			for (TestCase testCase : testCases) {
-				List<TestStep> testSteps = testCase.getTestStepList();
-				for (TestStep testStep : testSteps) {
-					this.message += "|||"+testStep.getName();
+			TestSuiteRunner suiteRunner = (TestSuiteRunner) testRunner.getRunContext().getTestRunner();
+			List<TestCaseRunner> testCaseResults = suiteRunner.getResults();
+			for (TestCaseRunner testCaseRunner : testCaseResults) {
+				List<TestStepResult> testStepResults = testCaseRunner.getResults();
+				for (TestStepResult testStepResult : testStepResults) {
+					if (testStepResult.getTimeTaken() != 0) {
+						stepsCount ++;
+						averageTime += testStepResult.getTimeTaken();
+					}
 				}
 			}
+			this.message = "Time: "+String.valueOf(averageTime / stepsCount)+ ", steps: " + stepsCount + ", total time:" + averageTime;
+
 		}
 		catch( Exception ex )
 		{
