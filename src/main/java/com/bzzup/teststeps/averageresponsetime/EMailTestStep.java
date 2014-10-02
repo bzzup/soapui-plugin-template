@@ -19,8 +19,10 @@ import com.eviware.soapui.impl.wsdl.teststeps.WsdlTestStepWithProperties;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansion;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionContainer;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionUtils;
+import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestCaseRunContext;
 import com.eviware.soapui.model.testsuite.TestCaseRunner;
+import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestStepResult;
 import com.eviware.soapui.model.testsuite.TestStepResult.TestStepStatus;
 import com.eviware.soapui.support.UISupport;
@@ -142,22 +144,31 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 		WsdlTestStepResult result = new WsdlTestStepResult( this );
 		result.startTimer();
 
-		try
-		{
-			Properties props = System.getProperties();
-			props.put( "mail.smtp.host", context.expand( server ) );
-
-			Session session = Session.getDefaultInstance( props, null );
-			Message msg = new MimeMessage( session );
-			msg.setFrom( new InternetAddress( context.expand( mailFrom ) ) );
-			msg.setRecipients( Message.RecipientType.TO, InternetAddress.parse( context.expand( mailTo ), false ) );
-			msg.setSubject( context.expand( subject ) );
-			msg.setText( context.expand( message ) );
-			msg.setHeader( "X-Mailer", "soapUI EMail TestStep" );
-			msg.setSentDate( new Date() );
-
-			Transport.send( msg );
-			result.setStatus( TestStepStatus.OK );
+//		try
+//		{
+//			Properties props = System.getProperties();
+//			props.put( "mail.smtp.host", context.expand( server ) );
+//
+//			Session session = Session.getDefaultInstance( props, null );
+//			Message msg = new MimeMessage( session );
+//			msg.setFrom( new InternetAddress( context.expand( mailFrom ) ) );
+//			msg.setRecipients( Message.RecipientType.TO, InternetAddress.parse( context.expand( mailTo ), false ) );
+//			msg.setSubject( context.expand( subject ) );
+//			msg.setText( context.expand( message ) );
+//			msg.setHeader( "X-Mailer", "soapUI EMail TestStep" );
+//			msg.setSentDate( new Date() );
+//
+//			Transport.send( msg );
+//			result.setStatus( TestStepStatus.OK );
+//		}
+		try {
+			List<TestCase> testCases = testRunner.getTestCase().getTestSuite().getTestCaseList();
+			for (TestCase testCase : testCases) {
+				List<TestStep> testSteps = testCase.getTestStepList();
+				for (TestStep testStep : testSteps) {
+					this.message += "|||"+testRunner.getTestCase().getLabel();
+				}
+			}
 		}
 		catch( Exception ex )
 		{
