@@ -106,6 +106,8 @@ public class ParseJSONFactory extends AbstractTestAssertionFactory {
         		propValue = "";
         	} 
         	
+        	
+        	
         	try
             {
                 if(StringUtils.isNullOrEmpty(content))
