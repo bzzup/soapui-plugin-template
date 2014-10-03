@@ -8,13 +8,13 @@
 		factoryClass="com.smartbear.soapui.plugin.template.factories.ParseJSONFactory"
 		factoryType="com.eviware.soapui.impl.wsdl.teststeps.assertions.TestAssertionFactory" />
 
-	<tns:factory id="EMailTestStep"
+	<!--  <tns:factory id="EMailTestStep"
 		factoryType="com.eviware.soapui.impl.wsdl.teststeps.registry.WsdlTestStepFactory"
 		factoryClass="com.bzzup.teststeps.averageresponsetime.EMailTestStepFactory" />
 
 	<tns:factory id="EMailTestStepPanelBuilder"
 		factoryType="com.eviware.soapui.model.util.PanelBuilderFactory"
-		factoryClass="com.bzzup.teststeps.averageresponsetime.EMailTestStepPanelBuilderFactory" />
+		factoryClass="com.bzzup.teststeps.averageresponsetime.EMailTestStepPanelBuilderFactory" />-->
 
 
 </tns:soapui-factories>

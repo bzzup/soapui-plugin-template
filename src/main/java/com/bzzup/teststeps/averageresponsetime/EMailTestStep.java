@@ -168,13 +168,13 @@ public class EMailTestStep extends WsdlTestStepWithProperties implements Propert
 //		}
 
 
-		for (TestCase tc : this.getTestCase().getTestSuite().getTestCaseList()) {
-			for (TestStep ts : tc.getTestStepList()) {
-				for (String prop : ts.getPropertyNames()) {
-					SoapUI.log(prop);
-				}
-			}
-		}
+//		for (TestCase tc : this.getTestCase().getTestSuite().getTestCaseList()) {
+//			for (TestStep ts : tc.getTestStepList()) {
+//				for (String prop : ts.) {
+//					SoapUI.log(prop);
+//				}
+//			}
+//		}
 		
 		long averageTime = 0;
 		int stepsCount = 0;
